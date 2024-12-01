@@ -19,6 +19,7 @@ db1_user = os.getenv('DB1_USER')
 db1_password = os.getenv('DB1_PASSWORD')
 db1_host = os.getenv('DB1_HOST')
 db1_port = os.getenv('DB1_PORT')
+```
 
 ### 2. Membuat Koneksi ke Database
 Kode ini membuat dua koneksi ke PostgreSQL: satu untuk mengambil data, dan satu lagi untuk menyimpan data ke database tujuan di PostgreSQL.
@@ -39,6 +40,7 @@ pg_conn_dest = psycopg.connect(
     host=db2_host,  
     port=db2_port        
 )
+```
 
 ### 3. Mengeksekusi Query untuk Menarik dan Memasukkan Data
 Langkah selanjutnya adalah mengecek ID terbesar yang ada di MySQL dan menarik data terbaru dari PostgreSQL berdasarkan ID tersebut. Setelah itu, data tersebut dimasukkan ke dalam MySQL.
@@ -47,15 +49,19 @@ Langkah selanjutnya adalah mengecek ID terbesar yang ada di MySQL dan menarik da
 # Cek ID terakhir di MySQL
 pg_cursor_dest.execute("SELECT MAX(id) FROM mqtt_data")
 max_id_mysql = pg_cursor_dest.fetchone()[0]
+
 # Ambil data terbaru dari PostgreSQL
 pg_cursor.execute("SELECT id, topic, payload, received_at FROM mqtt_data WHERE id > %s", (max_id_mysql,))
+
 # Masukkan data ke MySQL
 insert_query = """
 INSERT INTO mqtt_data (id, topic, payload, received_at)
 VALUES (%s, %s, %s, %s)
 """
+
 pg_cursor_dest.executemany(insert_query, new_data)
 pg_conn_dest.commit()
+```
 
 ### 4. Menutup Koneksi
 Setelah data berhasil dipindahkan, koneksi ke kedua database ditutup untuk menghindari kebocoran sumber daya.
@@ -65,6 +71,7 @@ pg_cursor.close()
 pg_conn.close()
 pg_cursor_dest.close()
 pg_conn_dest.close()
+```
 
 ## Kesimpulan
 Kode ini adalah contoh yang sangat berguna untuk mentransfer data antar database secara otomatis menggunakan Python, PostgreSQL, dan MySQL. Dengan memanfaatkan pustaka seperti psycopg dan mysql.connector, kode ini bisa dengan mudah dimodifikasi untuk berbagai tujuan migrasi data lainnya.
